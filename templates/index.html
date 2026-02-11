@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Live Stream Recorder</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        .container { max-width: 1000px; margin: auto; }
+        h1 { color: #333; }
+        .form-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        label { font-weight: bold; display: block; margin: 10px 0 5px; }
+        input[type="text"] { padding: 10px; width: 300px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; color: white; }
+        button.start { background: #28a745; }
+        button.stop { background: #dc3545; }
+        button.delete { background: #6c757d; padding: 8px 14px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background: #e9ecef; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        form { display: inline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Live Stream Recorder</h1>
+
+        <div class="form-box">
+            <form action="/start-recording" method="post">
+                <label for="video_id">YouTube Video ID</label>
+                <input type="text" id="video_id" name="video_id" placeholder="e.g. IWBmU0fsoUU" required />
+                <br><br>
+                <button type="submit" class="start">Start Recording</button>
+            </form>
+        </div>
+
+        <h2>Active Recordings</h2>
+        {% if active_recordings %}
+        <table>
+            <tr><th>Video ID</th><th>File</th><th>Action</th></tr>
+            {% for rec in active_recordings %}
+            <tr>
+                <td>{{ rec.video_id }}</td>
+                <td>{{ rec.output }}</td>
+                <td>
+                    <form action="/stop-recording" method="post">
+                        <input type="hidden" name="video_id" value="{{ rec.video_id }}" />
+                        <button type="submit" class="stop">Stop</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No active recordings.</p>
+        {% endif %}
+
+        <h2>Completed Recordings</h2>
+        {% if completed_recordings %}
+        <table>
+            <tr><th>Video ID</th><th>File</th><th>Size (MB)</th><th>Download</th><th>Delete</th></tr>
+            {% for rec in completed_recordings %}
+            <tr>
+                <td>{{ rec.video_id }}</td>
+                <td>{{ rec.filename }}</td>
+                <td>{{ rec.size_mb }}</td>
+                <td><a href="{{ rec.url }}" target="_blank">Download</a></td>
+                <td>
+                    <form action="/delete-recording" method="post" onsubmit="return confirm('Delete {{ rec.filename }}?');">
+                        <input type="hidden" name="filename" value="{{ rec.filename }}" />
+                        <button type="submit" class="delete">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No completed recordings yet.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

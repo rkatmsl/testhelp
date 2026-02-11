@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Trim Recording</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f8f9fa; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+        h1, h2 { color: #333; }
+        label { font-weight: bold; display: block; margin: 20px 0 8px; }
+        input[type="text"] { width: 100%; padding: 10px; font-size: 16px; box-sizing: border-box; }
+        .checkbox { margin: 20px 0; }
+        button { padding: 12px 28px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .note { color: #555; margin-top: 25px; }
+        .back { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Recording Stopped</h1>
+        <p>Recorded file: <strong>{{ output_filename }}</strong></p>
+
+        <h2>Create a trimmed clip?</h2>
+
+        <form action="/perform-trim" method="post">
+            <input type="hidden" name="video_id" value="{{ video_id }}" />
+
+            <label for="start_time">Start time (required)</label>
+            <input type="text" id="start_time" name="start_time" placeholder="Examples: 2:00  or  120  or  00:02:30" required />
+
+            <label for="end_time">End time (optional)</label>
+            <input type="text" id="end_time" name="end_time" placeholder="Examples: 4:00  or  240  or  leave empty for full length" />
+
+            <div class="checkbox">
+                <input type="checkbox" id="keep_original" name="keep_original" checked />
+                <label for="keep_original" style="display:inline; font-weight:normal;">Keep the original full recording</label>
+            </div>
+
+            <button type="submit">Create Clip & Continue</button>
+        </form>
+
+        <div class="back">
+            <a href="/">Skip trimming → go back to home</a>
+        </div>
+
+        <p class="note">
+            <strong>Note:</strong> Times are relative to the start of the recorded file.<br>
+            Example: if you started recording 3 minutes after the stream began, "00:02:00" = 5:00 in the original stream.
+        </p>
+    </div>
+</body>
+</html>
