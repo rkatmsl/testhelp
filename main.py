@@ -256,3 +256,11 @@ async def get_file(filename: str):
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(404, "File not found")
     return FileResponse(file_path, filename=filename)
+
+@app.get("/check-ffmpeg")
+async def check_ffmpeg():
+    try:
+        result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True, timeout=10)
+        return {"status": "ok", "version": result.stdout.splitlines()[0]}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
