@@ -1,54 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/x-icon"
+        href="https://static.vecteezy.com/system/resources/previews/018/930/572/non_2x/youtube-logo-youtube-icon-transparent-free-png.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Live Stream Recorder</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
-        .container { max-width: 1000px; margin: auto; }
-        h1 { color: #333; }
-        .form-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        label { font-weight: bold; display: block; margin: 10px 0 5px; }
-        input[type="text"] { padding: 10px; width: 300px; font-size: 16px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; color: white; }
-        button.start { background: #28a745; }
-        button.stop { background: #dc3545; }
-        button.delete { background: #6c757d; padding: 8px 14px; font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background: #e9ecef; }
-        a { color: #007bff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        form { display: inline; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .form-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            color: white;
+        }
+
+        button.start {
+            background: #28a745;
+        }
+
+        button.stop {
+            background: #dc3545;
+        }
+
+        button.delete {
+            background: #6c757d;
+            padding: 8px 14px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #e9ecef;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        form {
+            display: inline;
+        }
 
         .support-box {
-    margin-top: 40px;
-    text-align: center;
-    padding: 20px;
-}
-
-.support-box a {
-    display: inline-block;
-    background: #ff6b00;
-    color: white;
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.support-box a:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.2);
-}
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+        }
 
 
+        .support-box a {
+            display: inline-block;
+            background: #ff6b00;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: medium;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .support-box a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Live Stream Recorder</h1>
@@ -65,7 +143,11 @@
         <h2>Active Recordings</h2>
         {% if active_recordings %}
         <table>
-            <tr><th>Video ID</th><th>File</th><th>Action</th></tr>
+            <tr>
+                <th>Video ID</th>
+                <th>File</th>
+                <th>Action</th>
+            </tr>
             {% for rec in active_recordings %}
             <tr>
                 <td>{{ rec.video_id }}</td>
@@ -86,7 +168,13 @@
         <h2>Completed Recordings</h2>
         {% if completed_recordings %}
         <table>
-            <tr><th>Video ID</th><th>File</th><th>Size (MB)</th><th>Download</th><th>Delete</th></tr>
+            <tr>
+                <th>Video ID</th>
+                <th>File</th>
+                <th>Size (MB)</th>
+                <th>Download</th>
+                <th>Delete</th>
+            </tr>
             {% for rec in completed_recordings %}
             <tr>
                 <td>{{ rec.video_id }}</td>
@@ -94,7 +182,8 @@
                 <td>{{ rec.size_mb }}</td>
                 <td><a href="{{ rec.url }}" target="_blank">Download</a></td>
                 <td>
-                    <form action="/delete-recording" method="post" onsubmit="return confirm('Delete {{ rec.filename }}?');">
+                    <form action="/delete-recording" method="post"
+                        onsubmit="return confirm('Delete {{ rec.filename }}?');">
                         <input type="hidden" name="filename" value="{{ rec.filename }}" />
                         <button type="submit" class="delete">Delete</button>
                     </form>
@@ -107,12 +196,12 @@
         {% endif %}
 
         <div class="support-box">
-            <p>If you enjoy using this tool, you can</p>
             <a href="https://thalairajbiryani.com/" target="_blank">
-                🍛 Buy me a Thaliraj Biryani
+                Helpful!? <br /> Buy me a <span style="font-weight: bold;">Thaliraj Biryani</span> 😋
             </a>
         </div>
-        
+
     </div>
 </body>
+
 </html>
