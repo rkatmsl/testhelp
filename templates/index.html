@@ -21,6 +21,32 @@
         a { color: #007bff; text-decoration: none; }
         a:hover { text-decoration: underline; }
         form { display: inline; }
+
+        .support-box {
+    margin-top: 40px;
+    text-align: center;
+    padding: 20px;
+}
+
+.support-box a {
+    display: inline-block;
+    background: #ff6b00;
+    color: white;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.support-box a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}
+
+
     </style>
 </head>
 <body>
@@ -79,6 +105,14 @@
         {% else %}
         <p>No completed recordings yet.</p>
         {% endif %}
+
+        <div class="support-box">
+            <p>If you enjoy using this tool, you can</p>
+            <a href="https://thalairajbiryani.com/" target="_blank">
+                🍛 Buy me a Thaliraj Biryani
+            </a>
+        </div>
+        
     </div>
 </body>
 </html>
