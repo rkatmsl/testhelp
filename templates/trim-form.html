@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon"
+        href="https://static.vecteezy.com/system/resources/previews/018/930/572/non_2x/youtube-logo-youtube-icon-transparent-free-png.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trim Video - {{ filename }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 20px 0 8px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .note {
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .support-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+        }
+
+
+        .support-box a {
+            display: inline-block;
+            background: #ff6b00;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: medium;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .support-box a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <a style="text-decoration: none;" href="/">←</a>
+            <h1 style="margin: 0;">Trim Video</h1>
+        </div>
+
+        <p style="margin-bottom: 4px;">File: <strong>{{ filename }}</strong></p>
+
+        <p class="note" style="margin: 0;">
+            The trimmed file will be named like: <code>{{ filename | replace('.mp4', '') }}_start-end.mp4</code>
+        </p>
+
+        <form action="/trim-recording" method="post">
+            <input type="hidden" name="filename" value="{{ filename }}" />
+
+            <label for="start_time">Start time (required)</label>
+            <input type="text" id="start_time" name="start_time" placeholder="e.g. 2:00  or  120  or  00:02:30"
+                required />
+
+            <label for="end_time">End time (optional - leave empty to go until end)</label>
+            <input type="text" id="end_time" name="end_time" placeholder="e.g. 4:00  or  240" />
+
+            <br><br>
+            <button type="submit">Create Trimmed Clip</button>
+        </form>
+
+
+        <div class="support-box">
+            <a href="https://linktr.ee/thalairajbiryani" target="_blank">
+                Helpful!? <br /> Buy me a <span style="font-weight: bold;">Thaliraj Biryani</span> 😋
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

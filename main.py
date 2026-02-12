@@ -10,9 +10,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
-app = FastAPI(title="YouTube Live Recorder with Trim")
+app = FastAPI(title="YouTube Live Recorder")
 
-# Folders
 DOWNLOAD_DIR = Path("downloads")
 DOWNLOAD_DIR.mkdir(exist_ok=True)
 
@@ -20,27 +19,34 @@ app.mount("/downloads", StaticFiles(directory=DOWNLOAD_DIR), name="downloads")
 
 templates = Jinja2Templates(directory="templates")
 
-# Active recordings: video_id → (process, output_path_str)
 active_processes = {}
 
-# Path to ffmpeg (change if needed, e.g. r"C:\ffmpeg\bin\ffmpeg.exe" on Windows)
-FFMPEG_PATH = "ffmpeg"
+FFMPEG_PATH = "ffmpeg"  # should be available on Railway after adding RAILPACK_DEPLOY_APT_PACKAGES=ffmpeg
+
+@app.get("/trim-form", response_class=HTMLResponse)
+async def trim_form(request: Request, filename: str):
+    file_path = DOWNLOAD_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(404, "File not found")
+    return templates.TemplateResponse("trim-form.html", {
+        "request": request,
+        "filename": filename
+    })
 
 def parse_time_to_seconds(time_str: str) -> float | None:
-    """Convert 2:30 / 02:30 / 150 → seconds. Returns None if invalid/empty"""
     if not time_str or not time_str.strip():
         return None
     time_str = time_str.strip()
     try:
         if ':' in time_str:
             parts = time_str.split(':')
-            if len(parts) == 2:  # mm:ss
+            if len(parts) == 2:
                 m, s = map(float, parts)
                 return m * 60 + s
-            elif len(parts) == 3:  # hh:mm:ss
+            elif len(parts) == 3:
                 h, m, s = map(float, parts)
                 return h * 3600 + m * 60 + s
-        return float(time_str)  # plain seconds
+        return float(time_str)
     except:
         return None
 
@@ -51,12 +57,11 @@ def record_live_stream(video_id: str):
     output_filename = f"{video_id}_{timestamp}.mp4"
     output_path = DOWNLOAD_DIR / output_filename
 
-    print(f"🎥 Started recording: {url}")
-    print(f"📁 Saving to: {output_path}")
+    print(f"🎥 Started: {url} → {output_path}")
 
     cmd = [
         "yt-dlp",
-        "--live-from-start",           # try to get from beginning if possible
+        "--live-from-start",
         "-f", "bv*+ba/best",
         "-o", str(output_path),
         "--merge-output-format", "mp4",
@@ -66,22 +71,26 @@ def record_live_stream(video_id: str):
     try:
         process = subprocess.Popen(cmd)
         active_processes[video_id] = (process, str(output_path))
-
         process.wait()
-
         if video_id in active_processes:
             del active_processes[video_id]
-        print(f"✅ Recording completed: {output_path}")
-
+        print(f"✅ Done: {output_path}")
     except Exception as e:
-        print(f"❌ Error during recording of {video_id}: {e}")
+        print(f"❌ Error: {e}")
         if video_id in active_processes:
             del active_processes[video_id]
 
-def clip_video(input_path: str, start_time: str, end_time: str = "", output_path: str = "") -> tuple[bool, str]:
+def create_clip(input_path: str, start_time: str, end_time: str = "") -> tuple[bool, str]:
     start_sec = parse_time_to_seconds(start_time)
     if start_sec is None:
-        return False, "Invalid start time format"
+        return False, "Invalid start time"
+
+    input_path_obj = Path(input_path)
+    video_id = input_path_obj.stem.split('_')[0]
+    start_str = start_time.replace(':', '').replace(' ', '')
+    end_str = end_time.replace(':', '').replace(' ', '') if end_time else 'end'
+    clip_filename = f"{video_id}_{start_str}-{end_str}.mp4"
+    clip_path = input_path_obj.parent / clip_filename
 
     cmd = [
         FFMPEG_PATH,
@@ -93,24 +102,19 @@ def clip_video(input_path: str, start_time: str, end_time: str = "", output_path
 
     if end_time:
         end_sec = parse_time_to_seconds(end_time)
-        if end_sec is None:
-            return False, "Invalid end time format"
-        if end_sec <= start_sec:
-            return False, "End time must be after start time"
+        if end_sec is None or end_sec <= start_sec:
+            return False, "Invalid end time or end <= start"
         duration = end_sec - start_sec
         cmd.extend(["-t", str(duration)])
 
-    if not output_path:
-        base = Path(input_path).stem
-        output_path = str(Path(input_path).parent / f"{base}_clip.mp4")
-    cmd.append(output_path)
+    cmd.append(str(clip_path))
 
     try:
         result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode == 0 and os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-            return True, f"Clip created: {output_path}"
+        if result.returncode == 0 and clip_path.exists() and clip_path.stat().st_size > 1000:
+            return True, f"Clip saved as: {clip_filename}"
         else:
-            return False, f"ffmpeg failed: {result.stderr.strip() or 'unknown error'}"
+            return False, f"ffmpeg error: {result.stderr.strip() or 'unknown'}"
     except Exception as e:
         return False, f"Failed to run ffmpeg: {str(e)}"
 
@@ -121,7 +125,7 @@ async def home(request: Request):
         filename = file.name
         parts = filename.split("_", 1)
         video_id = parts[0] if len(parts) > 1 else "unknown"
-        size_mb = round(file.stat().st_size / (1024 * 1024), 2) if file.stat().st_size > 0 else 0
+        size_mb = round(file.stat().st_size / (1024**2), 2) if file.stat().st_size > 0 else 0
         recordings.append({
             "filename": filename,
             "video_id": video_id,
@@ -150,7 +154,7 @@ async def home(request: Request):
 async def start_recording(video_id: str = Form(...)):
     video_id = video_id.strip()
     if not video_id:
-        raise HTTPException(400, "Video ID is required")
+        raise HTTPException(400, "Video ID required")
 
     if video_id in active_processes:
         return RedirectResponse(url="/", status_code=303)
@@ -163,104 +167,41 @@ async def start_recording(video_id: str = Form(...)):
 @app.post("/stop-recording")
 async def stop_recording(video_id: str = Form(...)):
     if video_id not in active_processes:
-        raise HTTPException(400, "No active recording for this video ID")
+        raise HTTPException(400, "No active recording")
 
-    process, output_path = active_processes[video_id]
-    print(f"🛑 Stopping {video_id} (PID: {process.pid})")
+    process, _ = active_processes[video_id]
     process.send_signal(signal.SIGINT)
 
-    # Redirect to trim prompt (even if process hasn't fully exited yet)
-    return RedirectResponse(url=f"/trim-prompt?video_id={video_id}", status_code=303)
+    return RedirectResponse(url="/", status_code=303)
 
-@app.get("/trim-prompt", response_class=HTMLResponse)
-async def trim_prompt(request: Request, video_id: str):
-    output_path = None
-    output_filename = ""
-
-    # Try active first
-    if video_id in active_processes:
-        _, output_path = active_processes[video_id]
-        output_filename = os.path.basename(output_path)
-    else:
-        # Find most recent completed file for this video_id
-        candidates = list(DOWNLOAD_DIR.glob(f"{video_id}_*.mp4"))
-        if candidates:
-            latest = max(candidates, key=lambda p: p.stat().st_mtime)
-            output_path = str(latest)
-            output_filename = latest.name
-
-    if not output_filename:
-        raise HTTPException(404, "No recording found for this video ID")
-
-    return templates.TemplateResponse(
-        "trim_prompt.html",
-        {
-            "request": request,
-            "video_id": video_id,
-            "output_filename": output_filename,
-            "output_path": output_path or ""
-        }
-    )
-
-@app.post("/perform-trim")
-async def perform_trim(
-    video_id: str = Form(...),
+@app.post("/trim-recording")
+async def trim_recording(
+    filename: str = Form(...),
     start_time: str = Form(...),
-    end_time: str = Form(default=""),
-    keep_original: bool = Form(default=True)
+    end_time: str = Form(default="")
 ):
-    candidates = list(DOWNLOAD_DIR.glob(f"{video_id}_*.mp4"))
-    if not candidates:
-        raise HTTPException(404, "No recording found")
+    file_path = DOWNLOAD_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(404, "File not found")
 
-    input_path = max(candidates, key=lambda p: p.stat().st_mtime)
-    input_filename = input_path.stem
-
-    clip_filename = f"{input_filename}_clip.mp4"
-    clip_path = DOWNLOAD_DIR / clip_filename
-
-    success, message = clip_video(
-        str(input_path),
-        start_time,
-        end_time,
-        str(clip_path)
-    )
+    success, message = create_clip(str(file_path), start_time, end_time)
 
     if not success:
         raise HTTPException(500, message)
-
-    if not keep_original:
-        try:
-            input_path.unlink()
-            print(f"Original file deleted: {input_path}")
-        except Exception as e:
-            print(f"Could not delete original: {e}")
 
     return RedirectResponse(url="/", status_code=303)
 
 @app.post("/delete-recording")
 async def delete_recording(filename: str = Form(...)):
     file_path = DOWNLOAD_DIR / filename
-    if not file_path.exists() or not file_path.is_file():
+    if not file_path.exists():
         raise HTTPException(404, "File not found")
-    try:
-        file_path.unlink()
-        print(f"🗑️ Deleted: {file_path}")
-    except Exception as e:
-        raise HTTPException(500, f"Failed to delete: {str(e)}")
+    file_path.unlink()
     return RedirectResponse(url="/", status_code=303)
 
 @app.get("/downloads/{filename}")
 async def get_file(filename: str):
     file_path = DOWNLOAD_DIR / filename
-    if not file_path.exists() or not file_path.is_file():
+    if not file_path.exists():
         raise HTTPException(404, "File not found")
     return FileResponse(file_path, filename=filename)
-
-@app.get("/check-ffmpeg")
-async def check_ffmpeg():
-    try:
-        result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True, timeout=10)
-        return {"status": "ok", "version": result.stdout.splitlines()[0]}
-    except Exception as e:
-        return {"status": "error", "detail": str(e)}
