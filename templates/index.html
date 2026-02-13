@@ -1,30 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon"
-    href="https://static.vecteezy.com/system/resources/previews/018/930/572/non_2x/youtube-logo-youtube-icon-transparent-free-png.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        href="https://static.vecteezy.com/system/resources/previews/018/930/572/non_2x/youtube-logo-youtube-icon-transparent-free-png.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Live Stream Recorder</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
-        .container { max-width: 1100px; margin: auto; }
-        h1 { color: #222; }
-        .form-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        label { font-weight: bold; display: block; margin: 10px 0 6px; }
-        input[type="text"] { padding: 10px; width: 320px; font-size: 16px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; color: white; }
-        button.start { background: #28a745; }
-        button.stop  { background: #dc3545; }
-        button.trim  { background: #007bff; padding: 8px 14px; font-size: 14px; }
-        button.delete { background: #6c757d; padding: 8px 14px; font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background: #e9ecef; }
-        a { color: #007bff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        form { display: inline; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f8f9fa;
+        }
 
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #222;
+        }
+
+        .form-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0 6px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 320px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            color: white;
+        }
+
+        button.start {
+            background: #28a745;
+        }
+
+        button.stop {
+            background: #dc3545;
+        }
+
+        button.trim {
+            background: #007bff;
+            padding: 8px 14px;
+            font-size: 14px;
+        }
+
+        button.delete {
+            background: red;
+            padding: 8px 14px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #e9ecef;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        form {
+            display: inline;
+        }
+
+        .copy-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .copy-btn:hover {
+            background: #5a6268;
+        }
+
+        .persist-check {
+            transform: scale(1.3);
+        }
+
+        td {
+            vertical-align: middle;
+        }
 
         .support-box {
             position: fixed;
@@ -53,9 +153,9 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
         }
-
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Live Stream Recorder</h1>
@@ -72,7 +172,11 @@
         <h2>Active Recordings</h2>
         {% if active_recordings %}
         <table>
-            <tr><th>Video ID</th><th>File</th><th>Action</th></tr>
+            <tr>
+                <th>Video ID</th>
+                <th>File</th>
+                <th>Action</th>
+            </tr>
             {% for rec in active_recordings %}
             <tr>
                 <td>{{ rec.video_id }}</td>
@@ -93,34 +197,102 @@
         <h2>Completed Recordings</h2>
         {% if completed_recordings %}
         <table>
-            <tr>
-                <th>Video ID</th>
-                <th>File</th>
-                <th>Size (MB)</th>
-                <th>Download</th>
-                <th>Trim</th>
-                <th>Delete</th>
-            </tr>
-            {% for rec in completed_recordings %}
-            <tr>
-                <td>{{ rec.video_id }}</td>
-                <td>{{ rec.filename }}</td>
-                <td>{{ rec.size_mb }}</td>
-                <td><a href="{{ rec.url }}" target="_blank">Download</a></td>
-                <td>
-                    <form action="/trim-form" method="get">
-                        <input type="hidden" name="filename" value="{{ rec.filename }}" />
-                        <button type="submit" class="trim">Trim</button>
-                    </form>
-                </td>
-                <td>
-                    <form action="/delete-recording" method="post" onsubmit="return confirm('Delete {{ rec.filename }}?');">
-                        <input type="hidden" name="filename" value="{{ rec.filename }}" />
-                        <button type="submit" class="delete">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Title</th>
+                    <th>Video ID</th>
+                    <th>Trim Range</th>
+                    <th>File</th>
+                    <th>Size (MB)</th>
+                    <!-- <th>Copy Link</th>
+                    <th>Download</th>
+                    <th>Trim</th>
+                    <th>Delete</th> -->
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in completed_recordings %}
+                <tr data-filename="{{ rec.filename }}">
+                    <td>
+                        <input type="checkbox" class="persist-check" data-key="{{ rec.filename }}">
+                    </td>
+                    <td>{{ rec.title | truncate(60) }}</td>
+                    <td>{{ rec.video_id }}</td>
+                    <td>{{ rec.trim_info }}</td>
+                    <td>{{ rec.filename }}</td>
+                    <td>{{ rec.size_mb }}</td>
+                    <!-- <td>
+                        <button class="copy-btn" data-clipboard="{{ request.base_url }}downloads/{{ rec.filename }}">
+                            Copy
+                        </button>
+                    </td>
+                    <td><a href="{{ rec.url }}" target="_blank">Download</a></td>
+                    <td>
+                        <form action="/trim-form" method="get">
+                            <input type="hidden" name="filename" value="{{ rec.filename }}" />
+                            <button type="submit" class="trim">Trim</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form action="/delete-recording" method="post"
+                            onsubmit="return confirm('Delete {{ rec.filename }}?');">
+                            <input type="hidden" name="filename" value="{{ rec.filename }}" />
+                            <button type="submit" class="delete">Delete</button>
+                        </form>
+                    </td> -->
+
+                    <td style="white-space: nowrap; padding: 8px 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                    
+                            <!-- Copy -->
+                            <button class="copy-btn" 
+                                    data-clipboard="{{ request.base_url }}downloads/{{ rec.filename }}"
+                                    style="padding: 4px; line-height: 1;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 11C6 8.17 6 6.76 6.88 5.88C7.76 5 9.17 5 12 5H15C17.83 5 19.24 5 20.12 5.88C21 6.76 21 8.17 21 11V16C21 18.83 21 20.24 20.12 21.12C19.24 22 17.83 22 15 22H12C9.17 22 7.76 22 6.88 21.12C6 20.24 6 18.83 6 16V11Z" stroke="currentColor" stroke-width="1.5"/>
+                                    <path opacity="0.5" d="M6 19C4.34 19 3 17.66 3 16V10C3 6.23 3 4.34 4.17 3.17C5.34 2 7.23 2 11 2H15C16.66 2 18 3.34 18 5" stroke="currentColor" stroke-width="1.5"/>
+                                </svg>
+                            </button>
+
+                                                        <!-- Trim -->
+                                                        <form action="/trim-form" method="get" style="margin: 0;">
+                                                            <input type="hidden" name="filename" value="{{ rec.filename }}" />
+                                                            <button type="submit" class="trim" style="padding: 4px; line-height: 1;">
+                                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M9 18.5L17 3M9 18.5C9 19.88 7.88 21 6.5 21C5.12 21 4 19.88 4 18.5C4 17.12 5.12 16 6.5 16C7.88 16 9 17.12 9 18.5ZM15 18.5L7 3M15 18.5C15 19.88 16.12 21 17.5 21C18.88 21 20 19.88 20 18.5C20 17.12 18.88 16 17.5 16C16.12 16 15 17.12 15 18.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                    
+                            <!-- Open -->
+                            <a href="{{ rec.url }}" target="_blank" style="display: inline-flex; background-color: blue; color: white; padding: 4px; line-height: 1;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17 17H17.01M17.4 14H18C18.93 14 19.4 14 19.77 14.15C20.26 14.35 20.64 14.74 20.85 15.23C21 15.6 21 16.07 21 17C21 17.93 21 18.4 20.85 18.77C20.64 19.26 20.26 19.64 19.77 19.85C19.4 20 18.93 20 18 20H6C5.07 20 4.6 20 4.23 19.85C3.74 19.64 3.36 19.26 3.15 18.77C3 18.4 3 17.93 3 17C3 16.07 3 15.6 3.15 15.23C3.36 14.74 3.74 14.35 4.23 14.15C4.6 14 5.07 14 6 14H6.6M12 15V4M12 15L9 12M12 15L15 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                
+
+                                                        <!-- Delete -->
+                                                        <form action="/delete-recording" method="post" 
+                                                        onsubmit="return confirm('Delete {{ rec.filename }}?');"
+                                                        style="margin: 0;">
+                                                      <input type="hidden" name="filename" value="{{ rec.filename }}" />
+                                                      <button type="submit" class="delete" style="padding: 4px; line-height: 1;">
+                                                          <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                              <path d="M10 2 L9 3 L3 3 L3 5 L4.109 5 L5.893 20.256 C6.024 21.25 6.88 22 7.875 22 L16.123 22 C17.118 22 17.975 21.25 18.105 20.256 L19.891 5 L21 5 L21 3 L15 3 L14 2 L10 2 Z M6.125 5 L17.875 5 L16.123 20 L7.875 20 L6.125 5 Z" fill="currentColor"/>
+                                                          </svg>
+                                                      </button>
+                                                  </form>
+                    
+                        </div>
+                    </td>
+
+
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
         {% else %}
         <p>No completed recordings yet.</p>
@@ -133,6 +305,43 @@
         </div>
 
     </div>
-</body>
-</html>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved checkbox states
+            document.querySelectorAll('.persist-check').forEach(cb => {
+                const key = 'recording-check-' + cb.dataset.key;
+                if (localStorage.getItem(key) === 'true') {
+                    cb.checked = true;
+                }
+
+                cb.addEventListener('change', () => {
+                    localStorage.setItem(key, cb.checked);
+                });
+            });
+
+            // Copy link buttons
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.dataset.clipboard;
+                    navigator.clipboard.writeText(url).then(() => {
+                        const orig = btn.textContent;
+                        btn.textContent = 'Copied!';
+                        btn.style.background = '#28a745';
+                        setTimeout(() => {
+                            btn.textContent = orig;
+                            btn.style.background = '';
+                        }, 1800);
+                    }).catch(err => {
+                        console.error('Copy failed', err);
+                        alert('Copy failed – please copy manually');
+                    });
+                });
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>
